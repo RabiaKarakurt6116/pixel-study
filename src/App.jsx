@@ -65,6 +65,11 @@ function App() {
     <div style={{ 
       background: currentTheme.bg, 
       minHeight: '100vh',
+      width: '100%',
+      maxWidth: '100vw',
+      overflowX: 'hidden',
+      padding: '10px',
+      boxSizing: 'border-box',
       transition: 'background 0.2s ease'
     }}>
       <div style={{
@@ -110,7 +115,6 @@ function App() {
           onMouseLeave={(e) => { e.target.style.background = 'rgba(231, 76, 60, 0.2)'; e.target.style.transform = 'translateY(0)' }}
         >🚪 ÇIKIŞ</button>
 
-        {/* TEMA DEĞİŞTİRME BUTONU */}
         <ThemeToggle />
       </div>
 
