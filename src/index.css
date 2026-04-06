@@ -1,3 +1,5 @@
+/* index.css - GÜNCELLENMİŞ MOBİL UYUMLU VERSİYON */
+
 * {
   margin: 0;
   padding: 0;
@@ -75,16 +77,19 @@ html, body, #root {
   max-width: 100vw !important;
 }
 
+/* Base mobile settings */
 @media (max-width: 768px) {
   
   body {
     font-size: 14px;
   }
   
+  /* Flexible containers */
   [style*="display: flex"] {
     flex-wrap: wrap !important;
   }
   
+  /* Navigation buttons */
   div[style*="position: sticky"] > div,
   div[style*="display: flex"][style*="gap: 15px"] {
     flex-wrap: wrap !important;
@@ -100,10 +105,12 @@ html, body, #root {
     white-space: nowrap !important;
   }
   
+  /* Main container padding */
   div[style*="min-height: 100vh"] {
     padding: 5px !important;
   }
   
+  /* Grid layouts to single column */
   .db-grid2, .db-grid3,
   [style*="grid-template-columns: 1fr 1fr"],
   [style*="grid-template-columns: repeat(3"] {
@@ -111,11 +118,13 @@ html, body, #root {
     gap: 8px !important;
   }
   
+  /* Card adjustments */
   .db-card, .wp-book, .cal-container, .ec-outer {
     margin: 6px 0 !important;
     width: 100% !important;
   }
   
+  /* Calendar adjustments */
   .cal-grid {
     gap: 1px !important;
   }
@@ -129,6 +138,7 @@ html, body, #root {
     font-size: 9px !important;
   }
   
+  /* Weekly plan book */
   .wp-book {
     flex-direction: column !important;
   }
@@ -150,20 +160,24 @@ html, body, #root {
     padding: 5px 1px !important;
   }
   
+  /* Container max-width */
   [style*="max-width: 750px"] {
     padding: 10px !important;
   }
   
+  /* Timer font size */
   [style*="font-size: 4.5rem"] {
     font-size: 2rem !important;
     letter-spacing: 3px !important;
     padding: 10px !important;
   }
   
+  /* Gap reductions */
   [style*="gap: 16px"] {
     gap: 6px !important;
   }
   
+  /* Form inputs */
   input, select, textarea {
     width: 100% !important;
     max-width: 100% !important;
@@ -171,6 +185,7 @@ html, body, #root {
     box-sizing: border-box !important;
   }
   
+  /* Badges */
   .db-badges, [style*="display: flex"][style*="flex-wrap: wrap"] {
     gap: 5px !important;
   }
@@ -180,27 +195,32 @@ html, body, #root {
     padding: 3px 6px !important;
   }
   
+  /* Scrollable tables */
   table, .wp-task-list, .ec-list, .cal-event-list {
     display: block !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
   }
   
+  /* Canvas */
   canvas[width="800"] {
     object-fit: cover !important;
     height: 100% !important;
   }
   
+  /* Headers */
   h1 {
     font-size: 36px !important;
   }
   
+  /* Auth modal */
   [style*="width: 400px"] {
     width: 90% !important;
     margin: 0 auto !important;
     padding: 15px !important;
   }
   
+  /* Profile section */
   .db-profile {
     flex-direction: column !important;
     text-align: center !important;
@@ -211,6 +231,7 @@ html, body, #root {
     margin-left: 0 !important;
   }
   
+  /* Counter */
   .ec-counter-wrap {
     width: 220px !important;
     height: 220px !important;
@@ -219,8 +240,72 @@ html, body, #root {
   .ec-days {
     font-size: 2.5rem !important;
   }
+  
+  /* Pomodoro buttons */
+  [style*="gap: 16px"] button {
+    padding: 6px 12px !important;
+    font-size: 0.7rem !important;
+  }
+  
+  /* Study chart */
+  [style*="height: 150px"] {
+    height: 120px !important;
+  }
+  
+  /* Touch targets - minimum 44px for better touch */
+  button, 
+  .wp-check, 
+  .wp-del,
+  .wp-add-row,
+  .cal-day,
+  .ec-del,
+  .wp-tab {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Buttons in row */
+  .wp-note-buttons {
+    flex-wrap: wrap !important;
+  }
+  
+  .wp-note-btn {
+    flex: 1 !important;
+    text-align: center !important;
+  }
+  
+  /* Exam list */
+  .ec-exam-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  
+  .ec-exam-days {
+    margin-left: auto !important;
+  }
+  
+  /* Calendar event list */
+  .cal-event-item {
+    flex-wrap: wrap !important;
+  }
+  
+  /* Stats grid */
+  [style*="display: grid"][style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  
+  /* Modal-like containers */
+  [style*="backdrop-filter: blur"] {
+    width: 95% !important;
+    padding: 20px !important;
+    margin: 10px !important;
+  }
 }
 
+/* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
   .db-grid2, .db-grid3 {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -233,4 +318,56 @@ html, body, #root {
   [style*="font-size: 4.5rem"] {
     font-size: 3rem !important;
   }
+  
+  /* Better touch targets for tablets */
+  button, 
+  .wp-check, 
+  .wp-del,
+  .cal-day {
+    min-height: 48px !important;
+  }
+}
+
+/* Landscape mode on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .wp-page {
+    min-height: 300px !important;
+  }
+  
+  .wp-task-list {
+    max-height: 150px !important;
+  }
+  
+  .cal-day {
+    min-height: 40px !important;
+  }
+  
+  [style*="min-height: 90vh"] {
+    min-height: auto !important;
+    padding: 10px !important;
+  }
+}
+
+/* Prevent zoom on input focus for iOS */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better touch scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable pull-to-refresh on some elements */
+.wp-task-list,
+.cal-event-list,
+.ec-list {
+  overscroll-behavior: contain;
 }
