@@ -31,26 +31,35 @@ function Calendar({ userId }) {
   }, [events])
 
   const checkNotificationPermission = () => {
-    if ('Notification' in window) {
+  try {
+    if (typeof Notification !== 'undefined' && 'Notification' in window) {
       setNotificationPermission(Notification.permission === 'granted')
     }
+  } catch(e) {
+    console.log('Bildirimler desteklenmiyor')
   }
+}
 
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
+ const requestNotificationPermission = async () => {
+  try {
+    if (typeof Notification !== 'undefined' && 'Notification' in window) {
       const permission = await Notification.requestPermission()
       setNotificationPermission(permission === 'granted')
-      if (permission === 'granted') {
-        showNotification('Bildirimler Aktif!', 'Hatırlatıcılar gönderilecek.')
-      }
     }
+  } catch(e) {
+    console.log('Bildirimler desteklenmiyor')
   }
+}
 
   const showNotification = (title, body) => {
-    if (notificationPermission) {
+  try {
+    if (notificationPermission && typeof Notification !== 'undefined') {
       new Notification(title, { body, icon: '/favicon.ico' })
     }
+  } catch(e) {
+    console.log('Bildirim gönderilemedi')
   }
+}
 
   const checkReminders = () => {
     const now = new Date()
