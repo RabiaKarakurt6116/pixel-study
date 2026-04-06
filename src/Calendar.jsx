@@ -1,4 +1,7 @@
 // src/Calendar.jsx (TEMALI VERSİYON)
+if (typeof window !== 'undefined' && !('Notification' in window)) {
+  window.Notification = { permission: 'denied', requestPermission: async () => 'denied' }
+}
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import { useTheme } from './ThemeContext'
