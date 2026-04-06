@@ -33,13 +33,60 @@ function WeeklyPlan({ userId }) {
     fetchTasks()
     fetchNotes()
     fetchDailyXP()
+    checkAndArchive()
+    
   }, [])
 
   const fetchTasks = async () => {
     const { data } = await supabase.from('weekly_plan').select('*').eq('user_id', userId)
     if (data) setTasks(data)
   }
-
+const checkAndArchive = async () => {
+  const today = new Date()
+  const dayOfWeek = today.getDay() // 0=Pazar, 1=Pazartesi
+  
+  // Son arşivleme tarihini kontrol et
+  const { data: lastArchive } = await supabase
+    .from('weekly_archive')
+    .select('week_start')
+    .eq('user_id', userId)
+    .order('week_start', { ascending: false })
+    .limit(1)
+  
+  // Bu haftanın Pazartesi'si
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+  monday.setHours(0, 0, 0, 0)
+  
+  const lastArchiveDate = lastArchive?.[0]?.week_start
+  const mondayStr = monday.toISOString().split('T')[0]
+  
+  // Daha önce bu hafta arşivlenmediyse arşivle
+  if (!lastArchiveDate || lastArchiveDate < mondayStr) {
+    const { data: currentTasks } = await supabase
+      .from('weekly_plan')
+      .select('*')
+      .eq('user_id', userId)
+    
+    if (currentTasks && currentTasks.length > 0) {
+      // Arşive taşı
+      const archiveData = currentTasks.map(task => ({
+        user_id: userId,
+        week_start: mondayStr,
+        day: task.day,
+        content: task.content,
+        is_done: task.is_done
+      }))
+      
+      await supabase.from('weekly_archive').insert(archiveData)
+      
+      // Mevcut görevleri sil
+      await supabase.from('weekly_plan').delete().eq('user_id', userId)
+      
+      await fetchTasks()
+    }
+  }
+}
   const fetchNotes = async () => {
     const { data } = await supabase.from('weekly_notes').select('*').eq('user_id', userId)
     if (data) {
