@@ -3,24 +3,27 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://jtxubfamrhzlttbxhlhq.supabase.co'
 const supabaseKey = 'sb_publishable_xDfmAY1QRwEPSVnLsUxXEQ_dHUqyZYR'
 
-// Mobil debug için
-console.log('Supabase URL:', supabaseUrl)
-console.log('Supabase Key exists:', !!supabaseKey)
-
+// ZORUNLU: API key'in doğru formatta olduğundan emin ol
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
-    storageKey: 'supabase-auth',
-    storage: localStorage
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   },
   global: {
     headers: {
-      'X-Client-Info': 'pixel-study-mobile'
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
     }
   }
 })
 
-// Test connection
-supabase.from('users').select('count').then(res => {
-  console.log('Supabase connection test:', res.error ? 'FAILED' : 'OK', res.error)
-})
+// TEST: Bağlantıyı kontrol et
+supabase.from('users').select('*', { count: 'exact', head: true })
+  .then(({ error }) => {
+    if (error) {
+      console.error('🔴 Supabase connection error:', error.message)
+    } else {
+      console.log('🟢 Supabase connected successfully!')
+    }
+  })
