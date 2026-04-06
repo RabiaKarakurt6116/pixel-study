@@ -49,6 +49,7 @@ function App() {
   }
 
   const theme = getThemeColor()
+  const btnFontSize = 'clamp(8px, 3vw, 11px)'
 
   // HOME SAYFASI
   if (screen === 'home') {
@@ -68,7 +69,7 @@ function App() {
       width: '100%',
       maxWidth: '100vw',
       overflowX: 'hidden',
-      padding: '10px',
+      padding: '8px',
       boxSizing: 'border-box',
       transition: 'background 0.2s ease'
     }}>
@@ -76,8 +77,8 @@ function App() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: '15px',
-        padding: '15px 10px',
+        gap: '8px',
+        padding: '10px 8px',
         borderBottom: `3px solid ${theme.main}`,
         background: currentTheme.bgCard,
         position: 'sticky',
@@ -85,32 +86,32 @@ function App() {
         zIndex: 100,
         flexWrap: 'wrap'
       }}>
-        <button onClick={() => setScreen('dashboard')} style={{ fontSize: '0.45rem', padding: '10px 20px', background: screen === 'dashboard' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'dashboard' ? theme.main : theme.main}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
+        <button onClick={() => setScreen('dashboard')} style={{ fontSize: btnFontSize, padding: '8px 12px', background: screen === 'dashboard' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'dashboard' ? theme.main : theme.main}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { if (screen !== 'dashboard') { e.target.style.background = 'rgba(230, 126, 34, 0.4)'; e.target.style.transform = 'translateY(-2px)' } }}
           onMouseLeave={(e) => { if (screen !== 'dashboard') { e.target.style.background = currentTheme.hover; e.target.style.transform = 'translateY(0)' } }}
         >🏠 ANA</button>
 
-        <button onClick={() => setScreen('pomodoro')} style={{ fontSize: '0.45rem', padding: '10px 20px', background: screen === 'pomodoro' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'pomodoro' ? theme.main : '#764ba2'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
+        <button onClick={() => setScreen('pomodoro')} style={{ fontSize: btnFontSize, padding: '8px 12px', background: screen === 'pomodoro' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'pomodoro' ? theme.main : '#764ba2'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { if (screen !== 'pomodoro') { e.target.style.background = 'rgba(118, 75, 162, 0.4)'; e.target.style.transform = 'translateY(-2px)' } }}
           onMouseLeave={(e) => { if (screen !== 'pomodoro') { e.target.style.background = currentTheme.hover; e.target.style.transform = 'translateY(0)' } }}
         >🍅 POMODORO</button>
 
-        <button onClick={() => setScreen('exams')} style={{ fontSize: '0.45rem', padding: '10px 20px', background: screen === 'exams' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'exams' ? theme.main : '#3498db'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
+        <button onClick={() => setScreen('exams')} style={{ fontSize: btnFontSize, padding: '8px 12px', background: screen === 'exams' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'exams' ? theme.main : '#3498db'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { if (screen !== 'exams') { e.target.style.background = 'rgba(52, 152, 219, 0.4)'; e.target.style.transform = 'translateY(-2px)' } }}
           onMouseLeave={(e) => { if (screen !== 'exams') { e.target.style.background = currentTheme.hover; e.target.style.transform = 'translateY(0)' } }}
         >📚 SINAV</button>
 
-        <button onClick={() => setScreen('weekly')} style={{ fontSize: '0.45rem', padding: '10px 20px', background: screen === 'weekly' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'weekly' ? theme.main : '#2ecc71'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
+        <button onClick={() => setScreen('weekly')} style={{ fontSize: btnFontSize, padding: '8px 12px', background: screen === 'weekly' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'weekly' ? theme.main : '#2ecc71'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { if (screen !== 'weekly') { e.target.style.background = 'rgba(46, 204, 113, 0.4)'; e.target.style.transform = 'translateY(-2px)' } }}
           onMouseLeave={(e) => { if (screen !== 'weekly') { e.target.style.background = currentTheme.hover; e.target.style.transform = 'translateY(0)' } }}
         >📓 PLAN</button>
 
-        <button onClick={() => setScreen('calendar')} style={{ fontSize: '0.45rem', padding: '10px 20px', background: screen === 'calendar' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'calendar' ? theme.main : '#ffb347'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
+        <button onClick={() => setScreen('calendar')} style={{ fontSize: btnFontSize, padding: '8px 12px', background: screen === 'calendar' ? theme.main : currentTheme.hover, border: `1px solid ${screen === 'calendar' ? theme.main : '#ffb347'}`, borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { if (screen !== 'calendar') { e.target.style.background = 'rgba(255, 179, 71, 0.4)'; e.target.style.transform = 'translateY(-2px)' } }}
           onMouseLeave={(e) => { if (screen !== 'calendar') { e.target.style.background = currentTheme.hover; e.target.style.transform = 'translateY(0)' } }}
         >📅 TAKVİM</button>
         
-        <button onClick={handleLogout} style={{ fontSize: '0.45rem', padding: '10px 20px', background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c', borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
+        <button onClick={handleLogout} style={{ fontSize: btnFontSize, padding: '8px 12px', background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c', borderRadius: '8px', cursor: 'pointer', color: currentTheme.text, transition: 'all 0.2s' }}
           onMouseEnter={(e) => { e.target.style.background = 'rgba(231, 76, 60, 0.4)'; e.target.style.transform = 'translateY(-2px)' }}
           onMouseLeave={(e) => { e.target.style.background = 'rgba(231, 76, 60, 0.2)'; e.target.style.transform = 'translateY(0)' }}
         >🚪 ÇIKIŞ</button>
