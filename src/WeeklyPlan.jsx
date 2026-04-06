@@ -291,7 +291,7 @@ function WeeklyPlan({ userId }) {
           image-rendering: crisp-edges;
         }
         
-        .wp-redline { position: absolute; left: 44px; top: 0; bottom: 0; width: 2px; background: #ffaaaa; pointer-events: none; }
+        
         
         .wp-day-header {
           font-size: 0.55rem;
