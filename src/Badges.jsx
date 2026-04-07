@@ -1,14 +1,14 @@
-// src/Badges.jsx - DÜZELTİLMİŞ VERSİYON
+// src/Badges.jsx - DÜZELTİLMİŞ (tablonuz badges, sütun badges_name)
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
 const BADGES = [
-  { id: 'first_login', label: '🎮 İLK GİRİŞ', desc: 'İlk kez giriş yaptın', icon: '🎮' },
-  { id: 'first_pomodoro', label: '🍅 İLK POMODORO', desc: 'İlk seansı tamamla', icon: '🍅' },
-  { id: 'streak_7', label: '🔥 7 GÜNLÜK SERİ', desc: '7 gün üst üste giriş', icon: '🔥' },
-  { id: 'tasks_10', label: '✅ GÖREV USTASI', desc: '10 görev tamamla', icon: '✅' },
-  { id: 'exams_5', label: '📚 SINAV SAVAŞÇISI', desc: '5 sınav ekle', icon: '📚' },
-  { id: 'level_5', label: '🏆 MAKSİMUM', desc: 'Seviye 5e ulaş', icon: '🏆' },
+  { id: 'first_login', label: '🎮 İLK GİRİŞ', desc: 'İlk kez giriş yaptın', icon: '🎮', color: '#3498db' },
+  { id: 'first_pomodoro', label: '🍅 İLK POMODORO', desc: 'İlk seansı tamamla', icon: '🍅', color: '#9b59b6' },
+  { id: 'streak_7', label: '🔥 7 GÜNLÜK SERİ', desc: '7 gün üst üste giriş', icon: '🔥', color: '#ff6b35' },
+  { id: 'tasks_10', label: '✅ GÖREV USTASI', desc: '10 görev tamamla', icon: '✅', color: '#2ecc71' },
+  { id: 'exams_5', label: '📚 SINAV SAVAŞÇISI', desc: '5 sınav ekle', icon: '📚', color: '#e74c3c' },
+  { id: 'level_5', label: '🏆 MAKSİMUM', desc: 'Seviye 5e ulaş', icon: '🏆', color: '#f1c40f' },
 ]
 
 export default function Badges({ userId }) {
@@ -21,13 +21,15 @@ export default function Badges({ userId }) {
   }, [userId])
 
   const loadBadges = async () => {
+    // TABLO ADI: badges, SÜTUN ADI: badges_name
     const { data } = await supabase
       .from('badges')
-      .select('badge_name')
+      .select('badges_name')
       .eq('user_id', userId)
     
     if (data) {
-      setUserBadges(data.map(b => b.badge_name))
+      setUserBadges(data.map(b => b.badges_name))
+      console.log('Kazanılan rozetler:', data.map(b => b.badges_name)) // Kontrol için
     }
   }
 

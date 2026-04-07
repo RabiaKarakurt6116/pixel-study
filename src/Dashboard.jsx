@@ -45,27 +45,31 @@ function Dashboard({ userId, onLogout }) {
     await updateStreak()
   }
 
-  const fetchUserData = async () => {
-    const { data } = await supabase
+const fetchUserData = async () => {
+  const { data } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  
+  if (data) {
+    setUserData(data)
+    // 🔥 BURASI EKLENDİ - Mevcut kullanıcıya da ilk giriş rozetini dene
+    await earnBadge('first_login')
+  } else {
+    const { data: authData } = await supabase.auth.getUser()
+    const { data: newUser } = await supabase
       .from('users')
-      .select('*')
-      .eq('id', userId)
+      .insert([{ id: userId, username: authData.user.email.split('@')[0], email: authData.user.email, xp: 0, level: 1, streak: 0 }])
+      .select()
       .single()
-    if (data) setUserData(data)
-    else {
-      const { data: authData } = await supabase.auth.getUser()
-      const { data: newUser } = await supabase
-        .from('users')
-        .insert([{ id: userId, username: authData.user.email.split('@')[0], email: authData.user.email, xp: 0, level: 1, streak: 0 }])
-        .select()
-        .single()
-      if (newUser) {
-        setUserData(newUser)
-        await addXP(5)
-        await earnBadge('first_login')
-      }
+    if (newUser) {
+      setUserData(newUser)
+      await addXP(5)
+      await earnBadge('first_login')
     }
   }
+}
 
   const fetchNearestExam = async () => {
     const { data } = await supabase
