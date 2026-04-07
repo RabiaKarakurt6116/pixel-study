@@ -1,32 +1,35 @@
-// src/Badges.jsx
+// src/Badges.jsx - DÜZELTİLMİŞ VERSİYON
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
+const BADGES = [
+  { id: 'first_login', label: '🎮 İLK GİRİŞ', desc: 'İlk kez giriş yaptın', icon: '🎮' },
+  { id: 'first_pomodoro', label: '🍅 İLK POMODORO', desc: 'İlk seansı tamamla', icon: '🍅' },
+  { id: 'streak_7', label: '🔥 7 GÜNLÜK SERİ', desc: '7 gün üst üste giriş', icon: '🔥' },
+  { id: 'tasks_10', label: '✅ GÖREV USTASI', desc: '10 görev tamamla', icon: '✅' },
+  { id: 'exams_5', label: '📚 SINAV SAVAŞÇISI', desc: '5 sınav ekle', icon: '📚' },
+  { id: 'level_5', label: '🏆 MAKSİMUM', desc: 'Seviye 5e ulaş', icon: '🏆' },
+]
+
 export default function Badges({ userId }) {
-  const [badges, setBadges] = useState([])
+  const [userBadges, setUserBadges] = useState([])
 
   useEffect(() => {
-    // Rozetleri yükle
-    const loadBadges = async () => {
-      const { data } = await supabase
-        .from('user_badges')
-        .select('*')
-        .eq('user_id', userId)
-      
-      if (data) setBadges(data)
+    if (userId) {
+      loadBadges()
     }
-    loadBadges()
   }, [userId])
 
-  const allBadges = [
-    { id: 1, name: 'Yeni Başlayan', icon: '🌱', condition: 'İlk pomodoro tamamlandı' },
-    { id: 2, name: '3 Gün Seri', icon: '🔥', condition: '3 gün üst üste çalış' },
-    { id: 3, name: '7 Gün Seri', icon: '⚡', condition: '7 gün üst üste çalış' },
-    { id: 4, name: 'Çalışkan', icon: '📚', condition: '10 saat çalışma' },
-    { id: 5, name: 'Süper Çalışkan', icon: '🎓', condition: '50 saat çalışma' },
-    { id: 6, name: 'Level 5', icon: '⭐', condition: '5. seviyeye ulaş' },
-    { id: 7, name: 'Level 10', icon: '👑', condition: '10. seviyeye ulaş' }
-  ]
+  const loadBadges = async () => {
+    const { data } = await supabase
+      .from('badges')
+      .select('badge_name')
+      .eq('user_id', userId)
+    
+    if (data) {
+      setUserBadges(data.map(b => b.badge_name))
+    }
+  }
 
   return (
     <div style={{
@@ -37,8 +40,8 @@ export default function Badges({ userId }) {
     }}>
       <h3 style={{ color: '#ffd700', marginBottom: '15px' }}>🏆 KAZANILAN ROZETLER</h3>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-        {allBadges.map(badge => {
-          const hasBadge = badges.find(b => b.badge_id === badge.id)
+        {BADGES.map(badge => {
+          const hasBadge = userBadges.includes(badge.id)
           return (
             <div key={badge.id} style={{
               textAlign: 'center',
@@ -58,7 +61,7 @@ export default function Badges({ userId }) {
               }}>
                 {badge.icon}
               </div>
-              <div style={{ fontSize: '10px', marginTop: '5px' }}>{badge.name}</div>
+              <div style={{ fontSize: '10px', marginTop: '5px' }}>{badge.label}</div>
             </div>
           )
         })}
