@@ -233,7 +233,7 @@ function Dashboard({ userId, onLogout }) {
       `}</style>
 
       <div className="db-wrap">
-        <div className="db-title">DASHBOARD</div>
+        <div className="db-title">Ana Sayfa</div>
 
         <UserStats userId={userId} />
 

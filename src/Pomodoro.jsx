@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTheme } from './ThemeContext'
+import { supabase } from './supabaseClient'
 
-const PomodoroTimer = () => {
+const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
   const { currentTheme } = useTheme()
   const MODES = {
     pomodoro: { workMin: 25, breakMin: 5, label: ">_ 25/5", modeName: "25/5" },
     medium: { workMin: 50, breakMin: 10, label: ">_ 50/10", modeName: "50/10" },
-    long: { workMin: 90, breakMin: 20, label: ">_ 90/20", modeName: "90/20" }
+    long: { workMin: 90, breakMin:20, label: ">_ 90/20", modeName: "90/20" }
   }
   
   const [currentModeKey, setCurrentModeKey] = useState("pomodoro")
@@ -17,6 +18,70 @@ const PomodoroTimer = () => {
   const [notificationPermission, setNotificationPermission] = useState(false)
   
   const timerIntervalRef = useRef(null)
+
+  // ============ XP ve ROZET FONKSİYONLARI ============
+  const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
+
+  const addXP = async (amount) => {
+    if (!userId) return
+    
+    const { data } = await supabase
+      .from('users')
+      .select('xp, level')
+      .eq('id', userId)
+      .single()
+    if (!data) return
+
+    const newXP = (data.xp || 0) + amount
+    const newLevel = XP_LEVELS.findIndex((threshold, i) => 
+      newXP < (XP_LEVELS[i + 1] || 99999)
+    ) + 1
+
+    await supabase.from('users').update({ xp: newXP, level: newLevel }).eq('id', userId)
+    if (newLevel >= 5) await earnBadge('level_5')
+  }
+
+  const earnBadge = async (badgeId) => {
+    if (!userId) return
+    
+    const { data } = await supabase
+      .from('badges')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('badge_name', badgeId)
+    if (data && data.length > 0) return
+    
+    await supabase.from('badges').insert([{ user_id: userId, badge_name: badgeId }])
+  }
+
+  const checkFirstPomodoroBadge = async () => {
+    if (!userId) return
+    
+    const { count } = await supabase
+      .from('pomodoro_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+    
+    if (count === 1) {
+      await earnBadge('first_pomodoro')
+    }
+  }
+
+  const savePomodoroLog = async () => {
+    if (!userId) return
+    
+    const { error } = await supabase
+      .from('pomodoro_logs')
+      .insert([{ user_id: userId, started_at: new Date().toISOString() }])
+    
+    if (!error) {
+      // Pomodoro başına 10 XP ekle
+      await addXP(10)
+      // İlk pomodoro rozeti kontrolü
+      await checkFirstPomodoroBadge()
+    }
+  }
+  // ================================================
   
   // Bildirim izni iste
   useEffect(() => {
@@ -89,10 +154,13 @@ const PomodoroTimer = () => {
     const sessionType = isWorkSession ? "ÇALIŞMA" : "MOLA"
     const durationMinutes = isWorkSession ? mode.workMin : mode.breakMin
     
+    // *** ÇALIŞMA SEANSI BİTİNCE POMODORO LOG'U KAYDET VE XP EKLE ***
     if (isWorkSession) {
+      savePomodoroLog()  // <--- BURASI ÇOK ÖNEMLİ! Pomodoro log'u kaydeder ve XP ekler
+      
       sendNotification(
         "🍅 ÇALIŞMA TAMAMLANDI! 🎉",
-        `${durationMinutes} dakika çalıştın! Şimdi ${mode.breakMin} dakika mola ver. Gözlerini dinlendir.`
+        `${durationMinutes} dakika çalıştın! +10 XP kazandın! Şimdi ${mode.breakMin} dakika mola ver.`
       )
     } else {
       sendNotification(
@@ -478,8 +546,8 @@ const PomodoroTimer = () => {
                         >
                           ✕
                         </button>
-                       </td>
-                     </tr>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>

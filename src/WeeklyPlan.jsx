@@ -16,6 +16,9 @@ const QUEST_MESSAGES = [
   "💪 HADİ BAŞLA, KAHRAMAN!"
 ]
 
+// XP seviye tablosu (Dashboard ile aynı olmalı)
+const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
+
 function WeeklyPlan({ userId }) {
   const { currentTheme } = useTheme()
   const [tasks, setTasks] = useState([])
@@ -34,59 +37,53 @@ function WeeklyPlan({ userId }) {
     fetchNotes()
     fetchDailyXP()
     checkAndArchive()
-    
   }, [])
 
   const fetchTasks = async () => {
     const { data } = await supabase.from('weekly_plan').select('*').eq('user_id', userId)
     if (data) setTasks(data)
   }
-const checkAndArchive = async () => {
-  const today = new Date()
-  const dayOfWeek = today.getDay() // 0=Pazar, 1=Pazartesi
-  
-  // Son arşivleme tarihini kontrol et
-  const { data: lastArchive } = await supabase
-    .from('weekly_archive')
-    .select('week_start')
-    .eq('user_id', userId)
-    .order('week_start', { ascending: false })
-    .limit(1)
-  
-  // Bu haftanın Pazartesi'si
-  const monday = new Date(today)
-  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-  monday.setHours(0, 0, 0, 0)
-  
-  const lastArchiveDate = lastArchive?.[0]?.week_start
-  const mondayStr = monday.toISOString().split('T')[0]
-  
-  // Daha önce bu hafta arşivlenmediyse arşivle
-  if (!lastArchiveDate || lastArchiveDate < mondayStr) {
-    const { data: currentTasks } = await supabase
-      .from('weekly_plan')
-      .select('*')
-      .eq('user_id', userId)
+
+  const checkAndArchive = async () => {
+    const today = new Date()
+    const dayOfWeek = today.getDay()
     
-    if (currentTasks && currentTasks.length > 0) {
-      // Arşive taşı
-      const archiveData = currentTasks.map(task => ({
-        user_id: userId,
-        week_start: mondayStr,
-        day: task.day,
-        content: task.content,
-        is_done: task.is_done
-      }))
+    const { data: lastArchive } = await supabase
+      .from('weekly_archive')
+      .select('week_start')
+      .eq('user_id', userId)
+      .order('week_start', { ascending: false })
+      .limit(1)
+    
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+    monday.setHours(0, 0, 0, 0)
+    
+    const lastArchiveDate = lastArchive?.[0]?.week_start
+    const mondayStr = monday.toISOString().split('T')[0]
+    
+    if (!lastArchiveDate || lastArchiveDate < mondayStr) {
+      const { data: currentTasks } = await supabase
+        .from('weekly_plan')
+        .select('*')
+        .eq('user_id', userId)
       
-      await supabase.from('weekly_archive').insert(archiveData)
-      
-      // Mevcut görevleri sil
-      await supabase.from('weekly_plan').delete().eq('user_id', userId)
-      
-      await fetchTasks()
+      if (currentTasks && currentTasks.length > 0) {
+        const archiveData = currentTasks.map(task => ({
+          user_id: userId,
+          week_start: mondayStr,
+          day: task.day,
+          content: task.content,
+          is_done: task.is_done
+        }))
+        
+        await supabase.from('weekly_archive').insert(archiveData)
+        await supabase.from('weekly_plan').delete().eq('user_id', userId)
+        await fetchTasks()
+      }
     }
   }
-}
+
   const fetchNotes = async () => {
     const { data } = await supabase.from('weekly_notes').select('*').eq('user_id', userId)
     if (data) {
@@ -105,15 +102,56 @@ const checkAndArchive = async () => {
     }
   }
 
+  // ============ ROZET FONKSİYONU ============
+  const earnBadge = async (badgeId) => {
+    if (!userId) return
+    
+    const { data } = await supabase
+      .from('badges')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('badge_name', badgeId)
+    if (data && data.length > 0) return
+    
+    await supabase.from('badges').insert([{ user_id: userId, badge_name: badgeId }])
+  }
+
+  // ============ 10 GÖREV ROZETİ KONTROLÜ ============
+  const checkFirstTaskBadge = async () => {
+    if (!userId) return
+    
+    // Toplam tamamlanmış görev sayısını bul (tüm günlerden)
+    const { data: allTasks } = await supabase
+      .from('weekly_plan')
+      .select('is_done')
+      .eq('user_id', userId)
+    
+    const completedCount = allTasks?.filter(t => t.is_done === true).length || 0
+    
+    if (completedCount >= 10) {
+      await earnBadge('tasks_10')
+    }
+  }
+
+  // ============ GÜNCELLENMİŞ addXP FONKSİYONU ============
   const addXP = async (amount, day) => {
     const { data: userData } = await supabase
       .from('users')
-      .select('xp')
+      .select('xp, level')
       .eq('id', userId)
       .single()
     
     const newXP = (userData?.xp || 0) + amount
-    await supabase.from('users').update({ xp: newXP }).eq('id', userId)
+    const newLevel = XP_LEVELS.findIndex((threshold, i) => 
+      newXP < (XP_LEVELS[i + 1] || 99999)
+    ) + 1
+
+    await supabase.from('users').update({ xp: newXP, level: newLevel }).eq('id', userId)
+    
+    // Level 5 rozeti kontrolü
+    if (newLevel >= 5) {
+      await earnBadge('level_5')
+    }
 
     const { data: existing } = await supabase
       .from('daily_xp_log')
@@ -169,6 +207,7 @@ const checkAndArchive = async () => {
     setEditingText('')
   }
 
+  // ============ GÜNCELLENMİŞ toggleTask FONKSİYONU ============
   const toggleTask = async (task) => {
     if (editingId === task.id) return
     
@@ -181,8 +220,13 @@ const checkAndArchive = async () => {
     
     if (data) {
       setTasks(prev => prev.map(t => t.id === task.id ? data[0] : t))
+      
+      // SADECE GÖREV TAMAMLANDIYSA (işaretlenmemişten işaretli hale geldiyse) XP EKLE
       if (newDoneState && !task.is_done) {
         await addXP(10, FULL_DAYS[activeDay])
+        
+        // 10 görev rozeti kontrolü
+        await checkFirstTaskBadge()
       }
     }
   }
@@ -337,8 +381,6 @@ const checkAndArchive = async () => {
           );
           image-rendering: crisp-edges;
         }
-        
-        
         
         .wp-day-header {
           font-size: 0.55rem;
@@ -519,8 +561,6 @@ const checkAndArchive = async () => {
             </div>
 
             <div className="wp-page">
-              <div className="wp-redline" />
-
               <div className="wp-day-header" style={{ color: COLORS[activeDay] }}>
                 {FULL_DAYS[activeDay]}
                 <span />

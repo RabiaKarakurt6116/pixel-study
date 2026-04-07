@@ -1,4 +1,4 @@
-// src/App.jsx - GÜNCELLENMİŞ MOBİL UYUMLU VERSİYON
+// src/App.jsx - GÜNCELLENMİŞ (Pomodoro'ya userId eklendi)
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import Auth from './Auth'
@@ -50,8 +50,6 @@ function App() {
 
   const theme = getThemeColor()
   const btnFontSize = 'clamp(8px, 3vw, 11px)'
-  
-  // Mobil için buton padding'i dinamik
   const btnPadding = 'clamp(6px, 2vw, 12px) clamp(8px, 3vw, 16px)'
 
   // HOME SAYFASI
@@ -213,7 +211,7 @@ function App() {
           <Dashboard userId={userId} onLogout={handleLogout} />
         </div>
         <div style={{ display: screen === 'pomodoro' ? 'block' : 'none' }}>
-          <PomodoroTimer />
+          <PomodoroTimer userId={userId} />   {/* <--- İŞTE BURASI DÜZELTİLDİ! */}
         </div>
         <div style={{ display: screen === 'exams' ? 'block' : 'none' }}>
           <ExamCountdown userId={userId} />
