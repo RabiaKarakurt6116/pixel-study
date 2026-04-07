@@ -150,10 +150,10 @@ function WeeklyPlan({ userId }) {
       .from('badges')
       .select('id')
       .eq('user_id', userId)
-      .eq('badge_name', badgeId)
+      .eq('badges_name', badgeId)
     if (data && data.length > 0) return
     
-    await supabase.from('badges').insert([{ user_id: userId, badge_name: badgeId }])
+    await supabase.from('badges').insert([{ user_id: userId, badges_name: badgeId }])
   }
 
   const checkFirstTaskBadge = async () => {
