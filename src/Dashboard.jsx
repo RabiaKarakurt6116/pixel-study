@@ -236,7 +236,7 @@ const fetchUserData = async () => {
       `}</style>
 
       <div className="db-wrap">
-        <div className="db-title">> ANA SAYFA_</div>
+        <div className="db-title">ANA SAYFA_</div>
 
         <UserStats userId={userId} />
 
@@ -260,7 +260,7 @@ const fetchUserData = async () => {
             <div className="db-card-inner">
               <div className="db-label">[ GUNLUK SERI ]</div>
               <div className="db-big" style={{ color: '#ff6b35' }}>{userData.streak || 0}</div>
-              <div className="db-sub" style={{ color: '#ff6b35' }}>> GUN_</div>
+              <div className="db-sub" style={{ color: '#ff6b35' }}>GUN_</div>
             </div>
           </div>
 
@@ -269,7 +269,7 @@ const fetchUserData = async () => {
             <div className="db-card-inner">
               <div className="db-label">[ TOPLAM XP ]</div>
               <div className="db-big" style={{ color: currentTheme.accent }}>{userData.xp || 0}</div>
-              <div className="db-sub" style={{ color: currentTheme.accent }}>> XP_</div>
+              <div className="db-sub" style={{ color: currentTheme.accent }}> XP_</div>
             </div>
           </div>
 
@@ -310,7 +310,7 @@ const fetchUserData = async () => {
                   </div>
                 </>
               ) : (
-                <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold' }}>> Sinav eklenmedi_</div>
+                <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold' }}> Sinav eklenmedi_</div>
               )}
             </div>
           </div>
@@ -347,7 +347,7 @@ const fetchUserData = async () => {
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold' }}>> Bugun icin gorev yok_</div>
+              <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold' }}> Bugun icin gorev yok_</div>
             )}
           </div>
         </div>

@@ -143,6 +143,33 @@ function WeeklyPlan({ userId }) {
     }
   }
 
+  const earnBadge = async (badgeId) => {
+    if (!userId) return
+    
+    const { data } = await supabase
+      .from('badges')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('badges_name', badgeId)
+    if (data && data.length > 0) return
+    
+    await supabase.from('badges').insert([{ user_id: userId, badges_name: badgeId }])
+  }
+
+  const checkFirstTaskBadge = async () => {
+    if (!userId) return
+    
+    const { data: allTasks } = await supabase
+      .from('weekly_plan')
+      .select('is_done')
+      .eq('user_id', userId)
+    
+    const completedCount = allTasks?.filter(t => t.is_done === true).length || 0
+    
+    if (completedCount >= 10) {
+      await earnBadge('tasks_10')
+    }
+  }
 
   const addXP = async (amount, day) => {
     const { data: userData } = await supabase
@@ -157,7 +184,10 @@ function WeeklyPlan({ userId }) {
     ) + 1
 
     await supabase.from('users').update({ xp: newXP, level: newLevel }).eq('id', userId)
-  
+    
+    if (newLevel >= 5) {
+      await earnBadge('level_5')
+    }
 
     const { data: existing } = await supabase
       .from('daily_xp_log')
@@ -228,7 +258,7 @@ function WeeklyPlan({ userId }) {
       
       if (newDoneState && !task.is_done) {
         await addXP(10, FULL_DAYS[activeDay])
-       
+        await checkFirstTaskBadge()
       }
     }
   }
