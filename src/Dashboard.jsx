@@ -6,12 +6,12 @@ import Badges from './Badges'
 import StudyChart from './StudyChart'
 
 const BADGES = [
-  { id: 'first_login', label: '🎮 İLK GİRİŞ', desc: 'İlk kez giriş yaptın', color: '#3498db' },
-  { id: 'first_pomodoro', label: '🍅 İLK POMODORO', desc: 'İlk seansı tamamla', color: '#9b59b6' },
-  { id: 'streak_7', label: '🔥 7 GÜNLÜK SERİ', desc: '7 gün üst üste giriş', color: '#ff6b35' },
-  { id: 'tasks_10', label: '✅ GÖREV USTASI', desc: '10 görev tamamla', color: '#2ecc71' },
-  { id: 'exams_5', label: '📚 SINAV SAVAŞÇISI', desc: '5 sınav ekle', color: '#e74c3c' },
-  { id: 'level_5', label: '🏆 MAKSİMUM', desc: 'Seviye 5e ulaş', color: '#f1c40f' },
+  { id: 'first_login', label: '🎮 ILK GIRIS', desc: 'Ilk kez giris yaptin', color: '#3498db' },
+  { id: 'first_pomodoro', label: '🍅 ILK POMODORO', desc: 'Ilk seansi tamamla', color: '#9b59b6' },
+  { id: 'streak_7', label: '🔥 7 GUNLUK SERI', desc: '7 gun ust uste giris', color: '#ff6b35' },
+  { id: 'tasks_10', label: '✅ GOREV USTASI', desc: '10 gorevi tamamla', color: '#2ecc71' },
+  { id: 'exams_5', label: '📚 SINAV SAVASCISI', desc: '5 sinav ekle', color: '#e74c3c' },
+  { id: 'level_5', label: '🏆 MAKSIMUM', desc: 'Seviye 5e ulas', color: '#f1c40f' },
 ]
 
 const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
@@ -54,7 +54,6 @@ const fetchUserData = async () => {
   
   if (data) {
     setUserData(data)
-    // 🔥 BURASI EKLENDİ - Mevcut kullanıcıya da ilk giriş rozetini dene
     await earnBadge('first_login')
   } else {
     const { data: authData } = await supabase.auth.getUser()
@@ -84,7 +83,7 @@ const fetchUserData = async () => {
 
   const fetchTodayTasks = async () => {
     const today = new Date()
-    const days = ['PAZAR', 'PAZARTESİ', 'SALI', 'ÇARŞAMBA', 'PERŞEMBE', 'CUMA', 'CUMARTESİ']
+    const days = ['PAZAR', 'PAZARTESI', 'SALI', 'CARSAMBA', 'PERSEMBE', 'CUMA', 'CUMARTESI']
     const todayName = days[today.getDay()]
     const { data } = await supabase
       .from('weekly_plan')
@@ -194,8 +193,8 @@ const fetchUserData = async () => {
   const pad = (n) => String(n).padStart(2, '0')
 
   if (!userData) return (
-    <div style={{ textAlign: 'center', marginTop: '100px', color: currentTheme.accent, fontFamily: "'Press Start 2P', cursive", fontSize: '0.5rem' }}>
-      YÜKLENİYOR...
+    <div style={{ textAlign: 'center', marginTop: '100px', color: currentTheme.accent, fontFamily: "'Courier New', monospace", fontWeight: 'bold', fontSize: '0.5rem' }}>
+      YUKLENIYOR...
     </div>
   )
 
@@ -203,41 +202,41 @@ const fetchUserData = async () => {
     <>
       <style>{`
         .db-wrap { background: ${currentTheme.bg}; min-height: 90vh; padding: 20px; }
-        .db-title { text-align: center; font-size: 0.6rem; color: ${currentTheme.accent}; margin-bottom: 16px; font-family: 'Press Start 2P', cursive; }
+        .db-title { text-align: center; font-size: 0.6rem; color: ${currentTheme.accent}; margin-bottom: 16px; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 2px; }
         .db-card { background: ${currentTheme.bgCard}; border: 2px solid; margin-bottom: 12px; }
         .db-card-bar { height: 5px; }
         .db-card-inner { padding: 12px 16px; }
         .db-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         .db-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         @media (max-width: 600px) { .db-grid2, .db-grid3 { grid-template-columns: 1fr; } }
-        .db-label { font-size: 0.3rem; color: ${currentTheme.textDim}; font-family: 'Press Start 2P', cursive; margin-bottom: 8px; }
-        .db-big { font-size: 2rem; font-family: 'Press Start 2P', cursive; line-height: 1; }
-        .db-sub { font-size: 0.3rem; font-family: 'Press Start 2P', cursive; margin-top: 4px; }
+        .db-label { font-size: 0.3rem; color: ${currentTheme.textDim}; font-family: 'Courier New', monospace; font-weight: bold; margin-bottom: 8px; letter-spacing: 1px; }
+        .db-big { font-size: 2rem; font-family: 'Courier New', monospace; font-weight: bold; line-height: 1; letter-spacing: 3px; }
+        .db-sub { font-size: 0.3rem; font-family: 'Courier New', monospace; font-weight: bold; margin-top: 4px; letter-spacing: 1px; }
         .db-profile { display: flex; align-items: center; gap: 16px; }
-        .db-avatar { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-family: 'Press Start 2P', cursive; background: ${currentTheme.accent}; border: 3px solid ${currentTheme.bgCard}; flex-shrink: 0; }
-        .db-username { font-size: 0.5rem; color: ${currentTheme.text}; font-family: 'Press Start 2P', cursive; }
-        .db-email { font-size: 0.3rem; color: ${currentTheme.textDim}; font-family: 'Press Start 2P', cursive; margin-top: 4px; }
-        .db-logout { margin-left: auto; font-family: 'Press Start 2P', cursive; font-size: 0.3rem; background: transparent; border: 2px solid #ff4444; color: #ff4444; padding: 8px 12px; cursor: pointer; }
+        .db-avatar { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-family: 'Courier New', monospace; font-weight: bold; background: ${currentTheme.accent}; border: 3px solid ${currentTheme.bgCard}; flex-shrink: 0; }
+        .db-username { font-size: 0.5rem; color: ${currentTheme.text}; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 1px; }
+        .db-email { font-size: 0.3rem; color: ${currentTheme.textDim}; font-family: 'Courier New', monospace; margin-top: 4px; }
+        .db-logout { margin-left: auto; font-family: 'Courier New', monospace; font-weight: bold; font-size: 0.3rem; background: transparent; border: 2px solid #ff4444; color: #ff4444; padding: 8px 12px; cursor: pointer; letter-spacing: 1px; }
         .db-logout:hover { background: #ff4444; color: #fff; }
         .db-xp-bar-wrap { background: ${currentTheme.bg}; border: 2px solid ${currentTheme.border}; height: 12px; margin-top: 8px; }
         .db-xp-bar { height: 100%; background: ${currentTheme.border}; transition: width 0.3s; }
         .db-task-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid ${currentTheme.textDim}; }
         .db-task-check { width: 12px; height: 12px; border: 2px solid ${currentTheme.success}; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.4rem; }
-        .db-task-text { font-size: 0.3rem; font-family: 'Press Start 2P', cursive; color: ${currentTheme.text}; }
+        .db-task-text { font-size: 0.3rem; font-family: 'Courier New', monospace; font-weight: bold; color: ${currentTheme.text}; letter-spacing: 1px; }
         .db-task-text.done { text-decoration: line-through; color: ${currentTheme.textDim}; }
         .db-progress-wrap { background: ${currentTheme.bg}; border: 2px solid ${currentTheme.success}; height: 10px; margin-top: 10px; }
         .db-progress { height: 100%; background: ${currentTheme.success}; }
         .db-badges { display: flex; flex-wrap: wrap; gap: 8px; }
-        .db-badge { padding: 6px 10px; font-size: 0.28rem; font-family: 'Press Start 2P', cursive; border: 2px solid; }
+        .db-badge { padding: 6px 10px; font-size: 0.28rem; font-family: 'Courier New', monospace; font-weight: bold; border: 2px solid; letter-spacing: 1px; }
         .db-badge.locked { opacity: 0.25; filter: grayscale(1); }
         .db-exam-time { display: flex; gap: 16px; justify-content: center; margin-top: 8px; }
         .db-time-block { text-align: center; }
-        .db-time-num { font-size: 1.2rem; font-family: 'Press Start 2P', cursive; }
-        .db-time-label { font-size: 0.25rem; font-family: 'Press Start 2P', cursive; color: ${currentTheme.textDim}; }
+        .db-time-num { font-size: 1.2rem; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 3px; }
+        .db-time-label { font-size: 0.25rem; font-family: 'Courier New', monospace; font-weight: bold; color: ${currentTheme.textDim}; letter-spacing: 1px; }
       `}</style>
 
       <div className="db-wrap">
-        <div className="db-title">Ana Sayfa</div>
+        <div className="db-title">> ANA SAYFA_</div>
 
         <UserStats userId={userId} />
 
@@ -250,7 +249,7 @@ const fetchUserData = async () => {
                 <div className="db-username">{userData.username}</div>
                 <div className="db-email">{userData.email}</div>
               </div>
-              <button className="db-logout" onClick={onLogout}>ÇIKIŞ YAP</button>
+              <button className="db-logout" onClick={onLogout}>[ CIKIS YAP ]</button>
             </div>
           </div>
         </div>
@@ -259,25 +258,25 @@ const fetchUserData = async () => {
           <div className="db-card" style={{ borderColor: '#ff6b35' }}>
             <div className="db-card-bar" style={{ background: '#ff6b35' }} />
             <div className="db-card-inner">
-              <div className="db-label">GÜNLÜK SERİ</div>
+              <div className="db-label">[ GUNLUK SERI ]</div>
               <div className="db-big" style={{ color: '#ff6b35' }}>{userData.streak || 0}</div>
-              <div className="db-sub" style={{ color: '#ff6b35' }}>🔥 GÜN</div>
+              <div className="db-sub" style={{ color: '#ff6b35' }}>> GUN_</div>
             </div>
           </div>
 
           <div className="db-card" style={{ borderColor: currentTheme.accent }}>
             <div className="db-card-bar" style={{ background: currentTheme.accent }} />
             <div className="db-card-inner">
-              <div className="db-label">TOPLAM XP</div>
+              <div className="db-label">[ TOPLAM XP ]</div>
               <div className="db-big" style={{ color: currentTheme.accent }}>{userData.xp || 0}</div>
-              <div className="db-sub" style={{ color: currentTheme.accent }}>⭐ XP</div>
+              <div className="db-sub" style={{ color: currentTheme.accent }}>> XP_</div>
             </div>
           </div>
 
           <div className="db-card" style={{ borderColor: currentTheme.border }}>
             <div className="db-card-bar" style={{ background: currentTheme.border }} />
             <div className="db-card-inner">
-              <div className="db-label">SEVİYE</div>
+              <div className="db-label">[ SEVIYE ]</div>
               <div className="db-big" style={{ color: currentTheme.border }}>{userData.level || 1}</div>
               <div className="db-xp-bar-wrap">
                 <div className="db-xp-bar" style={{ width: `${getLevelProgress(userData.xp || 0)}%` }} />
@@ -291,14 +290,14 @@ const fetchUserData = async () => {
           <div className="db-card" style={{ borderColor: '#3498db' }}>
             <div className="db-card-bar" style={{ background: '#3498db' }} />
             <div className="db-card-inner">
-              <div className="db-label">EN YAKIN SINAV</div>
+              <div className="db-label">[ EN YAKIN SINAV ]</div>
               {nearestExam ? (
                 <>
-                  <div style={{ fontSize: '0.4rem', color: currentTheme.text, fontFamily: "'Press Start 2P', cursive", marginBottom: '8px' }}>{nearestExam.name}</div>
+                  <div style={{ fontSize: '0.4rem', color: currentTheme.text, fontFamily: "'Courier New', monospace", fontWeight: 'bold', marginBottom: '8px' }}>{nearestExam.name}</div>
                   <div className="db-exam-time">
                     <div className="db-time-block">
                       <div className="db-time-num" style={{ color: '#3498db' }}>{pad(timeLeft.days ?? 0)}</div>
-                      <div className="db-time-label">GÜN</div>
+                      <div className="db-time-label">GUN</div>
                     </div>
                     <div className="db-time-block">
                       <div className="db-time-num" style={{ color: '#3498db' }}>{pad(timeLeft.hours ?? 0)}</div>
@@ -311,7 +310,7 @@ const fetchUserData = async () => {
                   </div>
                 </>
               ) : (
-                <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Press Start 2P', cursive" }}>Sınav eklenmedi</div>
+                <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold' }}>> Sinav eklenmedi_</div>
               )}
             </div>
           </div>
@@ -319,9 +318,9 @@ const fetchUserData = async () => {
           <div className="db-card" style={{ borderColor: currentTheme.border }}>
             <div className="db-card-bar" style={{ background: currentTheme.border }} />
             <div className="db-card-inner">
-              <div className="db-label">BUGÜNÜN POMODOROLARI</div>
+              <div className="db-label">[ BUGUNUN POMODOROLARI ]</div>
               <div className="db-big" style={{ color: currentTheme.border }}>{pomodoroCount}</div>
-              <div className="db-sub" style={{ color: currentTheme.border }}>{pomodoroCount * 25} DAKİKA ÇALIŞILDI</div>
+              <div className="db-sub" style={{ color: currentTheme.border }}>{pomodoroCount * 25} DAKIKA CALISILDI</div>
             </div>
           </div>
         </div>
@@ -329,7 +328,7 @@ const fetchUserData = async () => {
         <div className="db-card" style={{ borderColor: currentTheme.success }}>
           <div className="db-card-bar" style={{ background: currentTheme.success }} />
           <div className="db-card-inner">
-            <div className="db-label">BUGÜNÜN GÖREVLERİ</div>
+            <div className="db-label">[ BUGUNUN GOREVLERI ]</div>
             {todayTasks.length > 0 ? (
               <>
                 {todayTasks.slice(0, 5).map(task => (
@@ -343,12 +342,12 @@ const fetchUserData = async () => {
                 <div className="db-progress-wrap">
                   <div className="db-progress" style={{ width: `${todayTasks.length > 0 ? (completedTasks / todayTasks.length) * 100 : 0}%` }} />
                 </div>
-                <div style={{ fontSize: '0.28rem', color: currentTheme.textDim, fontFamily: "'Press Start 2P', cursive", marginTop: '6px' }}>
+                <div style={{ fontSize: '0.28rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold', marginTop: '6px' }}>
                   {completedTasks}/{todayTasks.length} TAMAMLANDI
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Press Start 2P', cursive" }}>Bugün için görev yok</div>
+              <div style={{ fontSize: '0.3rem', color: currentTheme.textDim, fontFamily: "'Courier New', monospace", fontWeight: 'bold' }}>> Bugun icin gorev yok_</div>
             )}
           </div>
         </div>
@@ -360,7 +359,7 @@ const fetchUserData = async () => {
         <div className="db-card" style={{ borderColor: currentTheme.accent }}>
           <div className="db-card-bar" style={{ background: currentTheme.accent }} />
           <div className="db-card-inner">
-            <div className="db-label">ROZETLER</div>
+            <div className="db-label">[ ROZETLER ]</div>
             <div className="db-badges">
               {BADGES.map(badge => (
                 <div
