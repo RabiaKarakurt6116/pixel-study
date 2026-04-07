@@ -16,7 +16,6 @@ const QUEST_MESSAGES = [
   "💪 HADİ BAŞLA, KAHRAMAN!"
 ]
 
-// XP seviye tablosu (Dashboard ile aynı olmalı)
 const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
 
 function WeeklyPlan({ userId }) {
@@ -37,50 +36,92 @@ function WeeklyPlan({ userId }) {
     fetchNotes()
     fetchDailyXP()
     checkAndArchive()
+    addSampleTasksIfEmpty()
   }, [])
 
+  // Örnek görev ekleme
+  const addSampleTasksIfEmpty = async () => {
+    const { data: existing } = await supabase
+      .from('weekly_plan')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1)
+    
+    if (existing && existing.length > 0) return
+    
+    const sampleTasks = [
+      { day: 'PAZARTESİ', content: 'Sabah rutini tamamla' },
+      { day: 'PAZARTESİ', content: 'En önemli görevi bitir' },
+      { day: 'SALI', content: 'Proje planını güncelle' },
+      { day: 'SALI', content: 'Takım toplantısına katıl' },
+      { day: 'ÇARŞAMBA', content: 'Dökümantasyon yaz' },
+      { day: 'ÇARŞAMBA', content: 'Kod review yap' },
+      { day: 'PERŞEMBE', content: 'Testleri çalıştır' },
+      { day: 'PERŞEMBE', content: 'Bug fix' },
+      { day: 'CUMA', content: 'Haftalık rapor hazırla' },
+      { day: 'CUMA', content: 'Hedefleri gözden geçir' },
+      { day: 'CUMARTESİ', content: 'Öğrenme görevi' }
+    ]
+    
+    for (const task of sampleTasks) {
+      await supabase.from('weekly_plan').insert([{
+        user_id: userId,
+        day: task.day,
+        content: task.content,
+        is_done: false
+      }])
+    }
+    
+    await fetchTasks()
+  }
+
   const fetchTasks = async () => {
-    const { data } = await supabase.from('weekly_plan').select('*').eq('user_id', userId)
-    if (data) setTasks(data)
+    const { data, error } = await supabase
+      .from('weekly_plan')
+      .select('*')
+      .eq('user_id', userId)
+    
+    if (error) {
+      console.error('fetchTasks hatası:', error)
+      return
+    }
+    setTasks(data || [])
   }
 
   const checkAndArchive = async () => {
     const today = new Date()
     const dayOfWeek = today.getDay()
-    
-    const { data: lastArchive } = await supabase
-      .from('weekly_archive')
-      .select('week_start')
-      .eq('user_id', userId)
-      .order('week_start', { ascending: false })
-      .limit(1)
+    const isMonday = dayOfWeek === 1
+    if (!isMonday) return
     
     const monday = new Date(today)
     monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
     monday.setHours(0, 0, 0, 0)
-    
-    const lastArchiveDate = lastArchive?.[0]?.week_start
     const mondayStr = monday.toISOString().split('T')[0]
     
-    if (!lastArchiveDate || lastArchiveDate < mondayStr) {
-      const { data: currentTasks } = await supabase
-        .from('weekly_plan')
-        .select('*')
+    const { data: currentTasks } = await supabase
+      .from('weekly_plan')
+      .select('*')
+      .eq('user_id', userId)
+    
+    if (currentTasks && currentTasks.length > 0) {
+      await supabase
+        .from('weekly_archive')
+        .delete()
         .eq('user_id', userId)
+        .eq('week_start', mondayStr)
       
-      if (currentTasks && currentTasks.length > 0) {
-        const archiveData = currentTasks.map(task => ({
-          user_id: userId,
-          week_start: mondayStr,
-          day: task.day,
-          content: task.content,
-          is_done: task.is_done
-        }))
-        
-        await supabase.from('weekly_archive').insert(archiveData)
-        await supabase.from('weekly_plan').delete().eq('user_id', userId)
-        await fetchTasks()
-      }
+      const archiveData = currentTasks.map(task => ({
+        user_id: userId,
+        week_start: mondayStr,
+        day: task.day,
+        content: task.content,
+        is_done: task.is_done
+      }))
+      
+      await supabase.from('weekly_archive').insert(archiveData)
+      await supabase.from('weekly_plan').delete().eq('user_id', userId)
+      await fetchTasks()
     }
   }
 
@@ -102,7 +143,6 @@ function WeeklyPlan({ userId }) {
     }
   }
 
-  // ============ ROZET FONKSİYONU ============
   const earnBadge = async (badgeId) => {
     if (!userId) return
     
@@ -116,11 +156,9 @@ function WeeklyPlan({ userId }) {
     await supabase.from('badges').insert([{ user_id: userId, badge_name: badgeId }])
   }
 
-  // ============ 10 GÖREV ROZETİ KONTROLÜ ============
   const checkFirstTaskBadge = async () => {
     if (!userId) return
     
-    // Toplam tamamlanmış görev sayısını bul (tüm günlerden)
     const { data: allTasks } = await supabase
       .from('weekly_plan')
       .select('is_done')
@@ -133,7 +171,6 @@ function WeeklyPlan({ userId }) {
     }
   }
 
-  // ============ GÜNCELLENMİŞ addXP FONKSİYONU ============
   const addXP = async (amount, day) => {
     const { data: userData } = await supabase
       .from('users')
@@ -148,7 +185,6 @@ function WeeklyPlan({ userId }) {
 
     await supabase.from('users').update({ xp: newXP, level: newLevel }).eq('id', userId)
     
-    // Level 5 rozeti kontrolü
     if (newLevel >= 5) {
       await earnBadge('level_5')
     }
@@ -207,7 +243,6 @@ function WeeklyPlan({ userId }) {
     setEditingText('')
   }
 
-  // ============ GÜNCELLENMİŞ toggleTask FONKSİYONU ============
   const toggleTask = async (task) => {
     if (editingId === task.id) return
     
@@ -221,11 +256,8 @@ function WeeklyPlan({ userId }) {
     if (data) {
       setTasks(prev => prev.map(t => t.id === task.id ? data[0] : t))
       
-      // SADECE GÖREV TAMAMLANDIYSA (işaretlenmemişten işaretli hale geldiyse) XP EKLE
       if (newDoneState && !task.is_done) {
         await addXP(10, FULL_DAYS[activeDay])
-        
-        // 10 görev rozeti kontrolü
         await checkFirstTaskBadge()
       }
     }
@@ -274,12 +306,10 @@ function WeeklyPlan({ userId }) {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
         }
-        
         @keyframes xpFloat {
           0% { transform: translateY(0) scale(1); opacity: 1; }
           100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
         }
-        
         .wp-outer {
           display: flex;
           justify-content: center;
@@ -290,7 +320,6 @@ function WeeklyPlan({ userId }) {
           background-image: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0px, rgba(0,255,0,0.03) 2px, transparent 2px, transparent 6px);
           position: relative;
         }
-        
         .wp-outer::before {
           content: "";
           position: absolute;
@@ -299,7 +328,6 @@ function WeeklyPlan({ userId }) {
           pointer-events: none;
           z-index: 1;
         }
-        
         .wp-book {
           display: flex;
           width: 100%;
@@ -311,10 +339,8 @@ function WeeklyPlan({ userId }) {
           image-rendering: crisp-edges;
           z-index: 2;
         }
-        
         .wp-top-line { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: #A0652A; }
         .wp-left-line { position: absolute; top: 0; left: 0; bottom: 0; width: 6px; background: #A0652A; }
-        
         .wp-spiral {
           width: 32px;
           background: #5A3210;
@@ -326,7 +352,6 @@ function WeeklyPlan({ userId }) {
           padding: 40px 0 10px;
           z-index: 1;
         }
-        
         .wp-ring {
           width: 18px;
           height: 18px;
@@ -335,16 +360,13 @@ function WeeklyPlan({ userId }) {
           image-rendering: crisp-edges;
           box-shadow: inset -1px -1px 0 #666, 2px 2px 0 #2a2a2a;
         }
-        
         .wp-page-area { flex: 1; display: flex; flex-direction: column; }
-        
         .wp-tabs {
           display: flex;
           background: #5A3210;
           border-bottom: 3px solid #3d1f00;
           padding-top: 8px;
         }
-        
         .wp-tab {
           flex: 1;
           padding: 8px 2px;
@@ -358,9 +380,7 @@ function WeeklyPlan({ userId }) {
           letter-spacing: 2px;
           transition: 0.05s linear;
         }
-        
         .wp-tab:last-child { border-right: none; }
-        
         .wp-tab.active {
           background: #fdfcf3;
           color: #3d1f00;
@@ -368,20 +388,15 @@ function WeeklyPlan({ userId }) {
           margin-bottom: -3px;
           box-shadow: inset 0 2px 0 ${COLORS[0]};
         }
-        
         .wp-page {
           background: #fdfcf3;
           flex: 1;
           min-height: 520px;
           position: relative;
           padding: 10px 16px 10px 48px;
-          background-image: repeating-linear-gradient(
-            transparent, transparent 27px,
-            #aad4f5 27px, #aad4f5 28px
-          );
+          background-image: repeating-linear-gradient(transparent, transparent 27px, #aad4f5 27px, #aad4f5 28px);
           image-rendering: crisp-edges;
         }
-        
         .wp-day-header {
           font-size: 0.55rem;
           font-family: 'Courier New', monospace;
@@ -393,9 +408,7 @@ function WeeklyPlan({ userId }) {
           margin-bottom: 4px;
           letter-spacing: 2px;
         }
-        
         .wp-day-header span { display: inline-block; width: 8px; height: 8px; background: currentColor; margin-left: 8px; animation: pixelBlink 1s step-end infinite; }
-        
         .wp-stats-panel {
           background: #e8e0c8;
           border: 2px solid #7B4A1E;
@@ -408,20 +421,16 @@ function WeeklyPlan({ userId }) {
           gap: 8px;
           image-rendering: crisp-edges;
         }
-        
         .wp-xp-box { background: #3d1f00; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
         .wp-xp-label { font-size: 0.3rem; color: ${currentTheme.accent}; font-family: 'Courier New', monospace; font-weight: bold; }
         .wp-xp-value { font-size: 0.55rem; color: ${currentTheme.accent}; font-family: 'Courier New', monospace; font-weight: bold; }
         .wp-progress-box { flex: 1; background: #c8b898; height: 12px; border: 1px solid #7B4A1E; }
         .wp-progress-fill { height: 100%; background: ${currentTheme.success}; width: 0%; transition: width 0.3s; box-shadow: inset 0 1px 0 #6effa0; }
         .wp-stats-text { font-size: 0.3rem; font-family: 'Courier New', monospace; font-weight: bold; color: #5A3210; }
-        
         .wp-task-list { max-height: 280px; overflow-y: auto; }
         .wp-task-list::-webkit-scrollbar { width: 8px; background: #e8e6d8; }
         .wp-task-list::-webkit-scrollbar-thumb { background: #7B4A1E; border: 1px solid #3d1f00; }
-        
         .wp-task-row { display: flex; align-items: center; gap: 10px; height: 28px; }
-        
         .wp-check {
           width: 16px;
           height: 16px;
@@ -437,9 +446,7 @@ function WeeklyPlan({ userId }) {
           image-rendering: crisp-edges;
           box-shadow: inset -1px -1px 0 #d0c8b0;
         }
-        
         .wp-check.checked { background: ${currentTheme.success}; border-color: ${currentTheme.success}; color: #3d1f00; }
-        
         .wp-task-text {
           font-size: 0.4rem;
           font-family: 'Courier New', monospace;
@@ -449,9 +456,7 @@ function WeeklyPlan({ userId }) {
           cursor: pointer;
           letter-spacing: 1px;
         }
-        
         .wp-task-text.done { text-decoration: line-through; color: #aa9a7a; }
-        
         .wp-xp-badge-small {
           font-size: 0.28rem;
           font-family: 'Courier New', monospace;
@@ -461,7 +466,6 @@ function WeeklyPlan({ userId }) {
           padding: 2px 6px;
           border-radius: 2px;
         }
-        
         .wp-del {
           width: 22px;
           height: 22px;
@@ -479,10 +483,8 @@ function WeeklyPlan({ userId }) {
           flex-shrink: 0;
           image-rendering: crisp-edges;
         }
-        
         .wp-task-row:hover .wp-del { opacity: 1; }
         .wp-del:hover { background: #5a2a0a; color: #ff4444; }
-        
         .wp-input {
           font-family: 'Courier New', monospace;
           font-size: 0.4rem;
@@ -495,12 +497,10 @@ function WeeklyPlan({ userId }) {
           flex: 1;
           padding: 4px;
         }
-        
         .wp-add-row { display: flex; align-items: center; gap: 10px; height: 28px; cursor: pointer; opacity: 0.6; transition: 0.1s; margin-top: 8px; }
         .wp-add-row:hover { opacity: 1; }
         .wp-add-icon { width: 16px; height: 16px; border: 2px dashed #aa9a7a; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #aa9a7a; flex-shrink: 0; }
         .wp-add-text { font-size: 0.35rem; color: #aa9a7a; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 2px; }
-        
         .wp-note-area { margin-top: 20px; border-top: 2px dashed #7B4A1E; padding-top: 12px; }
         .wp-note-label { font-size: 0.35rem; font-family: 'Courier New', monospace; font-weight: bold; color: #5A3210; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
         .wp-note-content { background: #fff8e8; border: 1px solid #7B4A1E; padding: 8px; font-size: 0.35rem; font-family: 'Courier New', monospace; color: #2a1a0a; cursor: pointer; min-height: 50px; }
@@ -509,11 +509,9 @@ function WeeklyPlan({ userId }) {
         .wp-note-buttons { display: flex; gap: 8px; margin-top: 6px; }
         .wp-note-btn { background: #7B4A1E; border: 1px solid #3d1f00; color: #fdfcf3; padding: 4px 12px; font-size: 0.3rem; font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; }
         .wp-note-btn:hover { background: #5A3210; }
-        
         .wp-quote { font-size: 0.28rem; color: #8a6a3a; text-align: center; margin-top: 12px; font-style: italic; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 1px; }
         .wp-bottom { height: 14px; background: #e8e6d8; border-top: 2px solid #d5d3c5; }
         .wp-bottom-dark { height: 6px; background: #5A3210; border-top: 2px solid #3d1f00; }
-        
         .wp-xp-animation {
           position: fixed;
           top: 50%;
