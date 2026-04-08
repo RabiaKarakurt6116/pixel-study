@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import { useTheme } from './ThemeContext'
 import UserStats from './UserStats'
-import StudyChart from './StudyChart'
 
 const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
 
@@ -90,9 +89,6 @@ const fetchUserData = async () => {
       .gte('started_at', today.toISOString())
     if (data) setPomodoroCount(data.length)
   }
-
-  
-  
 
   const updateStreak = async () => {
     const { data } = await supabase
@@ -320,7 +316,8 @@ const fetchUserData = async () => {
           </div>
         </div>
 
-        <StudyChart userId={userId} />
+        {/* StudyChart tamamen kaldırıldı */}
+        
       </div>
     </>
   )
