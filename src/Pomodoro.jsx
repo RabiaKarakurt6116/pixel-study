@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTheme } from './ThemeContext'
 import { supabase } from './supabaseClient'
 
-const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
+const PomodoroTimer = ({ userId }) => {
   const { currentTheme } = useTheme()
   const MODES = {
     pomodoro: { workMin: 25, breakMin: 5, label: ">_ 25/5", modeName: "25/5" },
@@ -10,16 +10,53 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
     long: { workMin: 90, breakMin:20, label: ">_ 90/20", modeName: "90/20" }
   }
   
-  const [currentModeKey, setCurrentModeKey] = useState("pomodoro")
-  const [isWorkSession, setIsWorkSession] = useState(true)
-  const [timerSeconds, setTimerSeconds] = useState(25 * 60)
-  const [isRunning, setIsRunning] = useState(false)
+  const getSavedState = () => {
+    try {
+      const saved = localStorage.getItem('pomodoro_state')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const savedTime = parsed.savedAt
+        if (savedTime && Date.now() - savedTime < 24 * 60 * 60 * 1000) {
+          return parsed
+        }
+      }
+    } catch (e) {
+      console.log('LocalStorage okuma hatası')
+    }
+    return null
+  }
+
+  const savedState = getSavedState()
+  
+  const [currentModeKey, setCurrentModeKey] = useState(savedState?.currentModeKey || "pomodoro")
+  const [isWorkSession, setIsWorkSession] = useState(savedState?.isWorkSession !== undefined ? savedState.isWorkSession : true)
+  const [timerSeconds, setTimerSeconds] = useState(() => {
+    if (savedState && savedState.timerSeconds) {
+      return savedState.timerSeconds
+    }
+    return 25 * 60
+  })
+  const [isRunning, setIsRunning] = useState(savedState?.isRunning || false)
   const [sessionsHistory, setSessionsHistory] = useState([])
   const [notificationPermission, setNotificationPermission] = useState(false)
   
   const timerIntervalRef = useRef(null)
 
-  // ============ XP ve ROZET FONKSİYONLARI ============
+  const saveStateToLocalStorage = () => {
+    const stateToSave = {
+      currentModeKey,
+      isWorkSession,
+      timerSeconds,
+      isRunning,
+      savedAt: Date.now()
+    }
+    localStorage.setItem('pomodoro_state', JSON.stringify(stateToSave))
+  }
+
+  useEffect(() => {
+    saveStateToLocalStorage()
+  }, [currentModeKey, isWorkSession, timerSeconds, isRunning])
+
   const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
 
   const addXP = async (amount) => {
@@ -75,15 +112,11 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
       .insert([{ user_id: userId, started_at: new Date().toISOString() }])
     
     if (!error) {
-      // Pomodoro başına 10 XP ekle
       await addXP(10)
-      // İlk pomodoro rozeti kontrolü
       await checkFirstPomodoroBadge()
     }
   }
-  // ================================================
   
-  // Bildirim izni iste
   useEffect(() => {
     if (Notification.permission === 'granted') {
       setNotificationPermission(true)
@@ -96,7 +129,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
     }
   }, [])
   
-  // Ses çalma fonksiyonu
   const playBell = () => {
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
@@ -117,7 +149,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
     }
   }
   
-  // Bildirim gönder
   const sendNotification = (title, body) => {
     if (notificationPermission) {
       new Notification(title, { body, icon: '/favicon.svg' })
@@ -154,9 +185,8 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
     const sessionType = isWorkSession ? "ÇALIŞMA" : "MOLA"
     const durationMinutes = isWorkSession ? mode.workMin : mode.breakMin
     
-    // *** ÇALIŞMA SEANSI BİTİNCE POMODORO LOG'U KAYDET VE XP EKLE ***
     if (isWorkSession) {
-      savePomodoroLog()  // <--- BURASI ÇOK ÖNEMLİ! Pomodoro log'u kaydeder ve XP ekler
+      savePomodoroLog()
       
       sendNotification(
         "🍅 ÇALIŞMA TAMAMLANDI! 🎉",
@@ -213,6 +243,8 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
     const maxSec = getCurrentMaxSeconds()
     setTimerSeconds(maxSec)
     setIsRunning(false)
+    localStorage.removeItem('pomodoro_state')
+    setTimeout(() => saveStateToLocalStorage(), 0)
   }
   
   const skipSession = () => {
@@ -256,6 +288,17 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
   }
   
   useEffect(() => {
+    window.addEventListener('beforeunload', () => {
+      saveStateToLocalStorage()
+    })
+    return () => {
+      window.removeEventListener('beforeunload', () => {
+        saveStateToLocalStorage()
+      })
+    }
+  }, [])
+  
+  useEffect(() => {
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
     }
@@ -283,7 +326,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
         imageRendering: 'pixelated'
       }}>
         
-        {/* BAŞLIK */}
         <div style={{
           textAlign: 'center',
           marginBottom: '24px',
@@ -298,7 +340,7 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
             padding: '4px 12px',
             display: 'inline-block'
           }}>
-            █ P O M O D O R O   V 1.1 █
+            █ P O M O D O R O   V 1.2 █
           </span>
           {notificationPermission && (
             <div style={{
@@ -311,7 +353,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
           )}
         </div>
         
-        {/* MOD SEÇİMİ */}
         <div style={{
           display: 'flex',
           gap: '12px',
@@ -342,7 +383,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
           ))}
         </div>
         
-        {/* SAYAÇ */}
         <div style={{
           background: currentTheme.bg,
           border: `3px solid ${currentTheme.border}`,
@@ -400,7 +440,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
           </div>
         </div>
         
-        {/* BUTONLAR */}
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -440,7 +479,6 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
           ))}
         </div>
         
-        {/* SEANS GEÇMİŞİ */}
         <div style={{
           background: currentTheme.bg,
           border: `2px solid ${currentTheme.border}`,
@@ -585,7 +623,7 @@ const PomodoroTimer = ({ userId }) => {  // userId prop olarak alıyor
           fontSize: '0.5rem',
           letterSpacing: '2px'
         }}>
-          [ PIXEL STUDY v1.1 ] | [ PRESS START TO BEGIN ] | [ ✕ DELETE SESSION ]
+          [ PIXEL STUDY v1.2 ] | [ OTOMATİK KAYIT AKTİF ] | [ ✕ DELETE SESSION ]
         </div>
       </div>
       
