@@ -23,7 +23,7 @@ function Dashboard({ userId, onLogout }) {
   const [todayTasks, setTodayTasks] = useState([])
   const [pomodoroCount, setPomodoroCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState({})
-  const [userBadges, setUserBadges] = useState([])
+  
 
   useEffect(() => {
     fetchAll()
@@ -41,7 +41,6 @@ function Dashboard({ userId, onLogout }) {
     await fetchNearestExam()
     await fetchTodayTasks()
     await fetchPomodoroCount()
-    await fetchBadges()
     await updateStreak()
   }
 
@@ -54,7 +53,6 @@ const fetchUserData = async () => {
   
   if (data) {
     setUserData(data)
-    await earnBadge('first_login')
   } else {
     const { data: authData } = await supabase.auth.getUser()
     const { data: newUser } = await supabase
@@ -65,7 +63,6 @@ const fetchUserData = async () => {
     if (newUser) {
       setUserData(newUser)
       await addXP(5)
-      await earnBadge('first_login')
     }
   }
 }
@@ -104,13 +101,8 @@ const fetchUserData = async () => {
     if (data) setPomodoroCount(data.length)
   }
 
-  const fetchBadges = async () => {
-    const { data } = await supabase
-      .from('badges')
-      .select('badge_name')
-      .eq('user_id', userId)
-    if (data) setUserBadges(data.map(b => b.badge_name))
-  }
+  
+  
 
   const updateStreak = async () => {
     const { data } = await supabase
@@ -135,7 +127,7 @@ const fetchUserData = async () => {
       xp: (data.xp || 0) + 5
     }).eq('id', userId)
 
-    if (newStreak >= 7) await earnBadge('streak_7')
+   
     await fetchUserData()
   }
 
@@ -153,20 +145,9 @@ const fetchUserData = async () => {
     ) + 1
 
     await supabase.from('users').update({ xp: newXP, level: newLevel }).eq('id', userId)
-    if (newLevel >= 5) await earnBadge('level_5')
     await fetchUserData()
   }
 
-  const earnBadge = async (badgeId) => {
-    const { data } = await supabase
-      .from('badges')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('badge_name', badgeId)
-    if (data && data.length > 0) return
-    await supabase.from('badges').insert([{ user_id: userId, badge_name: badgeId }])
-    await fetchBadges()
-  }
 
   const calcTimeLeft = (dateStr) => {
     const diff = new Date(dateStr) - new Date()
@@ -356,24 +337,7 @@ const fetchUserData = async () => {
 
         <Badges userId={userId} />
 
-        <div className="db-card" style={{ borderColor: currentTheme.accent }}>
-          <div className="db-card-bar" style={{ background: currentTheme.accent }} />
-          <div className="db-card-inner">
-            <div className="db-label">[ ROZETLER ]</div>
-            <div className="db-badges">
-              {BADGES.map(badge => (
-                <div
-                  key={badge.id}
-                  className={`db-badge ${userBadges.includes(badge.id) ? '' : 'locked'}`}
-                  style={{ borderColor: badge.color, color: badge.color }}
-                  title={badge.desc}
-                >
-                  {badge.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        
       </div>
     </>
   )
