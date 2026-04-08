@@ -2,17 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import { useTheme } from './ThemeContext'
 import UserStats from './UserStats'
-import Badges from './Badges'
 import StudyChart from './StudyChart'
-
-const BADGES = [
-  { id: 'first_login', label: '🎮 ILK GIRIS', desc: 'Ilk kez giris yaptin', color: '#3498db' },
-  { id: 'first_pomodoro', label: '🍅 ILK POMODORO', desc: 'Ilk seansi tamamla', color: '#9b59b6' },
-  { id: 'streak_7', label: '🔥 7 GUNLUK SERI', desc: '7 gun ust uste giris', color: '#ff6b35' },
-  { id: 'tasks_10', label: '✅ GOREV USTASI', desc: '10 gorevi tamamla', color: '#2ecc71' },
-  { id: 'exams_5', label: '📚 SINAV SAVASCISI', desc: '5 sinav ekle', color: '#e74c3c' },
-  { id: 'level_5', label: '🏆 MAKSIMUM', desc: 'Seviye 5e ulas', color: '#f1c40f' },
-]
 
 const XP_LEVELS = [0, 100, 250, 500, 900, 1500]
 
@@ -207,9 +197,6 @@ const fetchUserData = async () => {
         .db-task-text.done { text-decoration: line-through; color: ${currentTheme.textDim}; }
         .db-progress-wrap { background: ${currentTheme.bg}; border: 2px solid ${currentTheme.success}; height: 10px; margin-top: 10px; }
         .db-progress { height: 100%; background: ${currentTheme.success}; }
-        .db-badges { display: flex; flex-wrap: wrap; gap: 8px; }
-        .db-badge { padding: 6px 10px; font-size: 0.28rem; font-family: 'Courier New', monospace; font-weight: bold; border: 2px solid; letter-spacing: 1px; }
-        .db-badge.locked { opacity: 0.25; filter: grayscale(1); }
         .db-exam-time { display: flex; gap: 16px; justify-content: center; margin-top: 8px; }
         .db-time-block { text-align: center; }
         .db-time-num { font-size: 1.2rem; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 3px; }
@@ -334,10 +321,6 @@ const fetchUserData = async () => {
         </div>
 
         <StudyChart userId={userId} />
-
-        <Badges userId={userId} />
-
-        
       </div>
     </>
   )
